@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization Graph</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #f0f4f8, #ffffff);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4ECDC4;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: slideIn 1s ease-in;
+            margin-bottom: 20px;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .charts {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .pie-chart {
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            max-width: 45%; /* Adjust as needed */
+        }
+        .pie-chart:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin: 15px 0;
+        }
+        hr {
+            border: 1px solid #4ECDC4;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Visualization Graph</h1>
+    {% for idx in range(0, pie_chart_images|length, 2) %}
+        <div class="container">
+            <h2>Similarity Score Visualization for Candidate {{ (idx // 2)+2}}</h2>
+            <div class="charts">
+                <img src="{{ url_for('static', filename=pie_chart_images[idx]) }}" alt="Pie Chart {{ idx + 1 }}" class="pie-chart">
+                {% if idx + 1 < pie_chart_images|length %}
+                    <img src="{{ url_for('static', filename=pie_chart_images[idx + 1]) }}" alt="Pie Chart {{ idx + 2 }}" class="pie-chart">
+                {% endif %}
+            </div>
+        </div>
+        <hr>
+    {% endfor %}
+</body>
+</html>

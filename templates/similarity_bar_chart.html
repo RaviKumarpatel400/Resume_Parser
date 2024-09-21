@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similarity Bar Chart</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        h1 {
+            text-align: center;
+            margin: 2rem 0;
+            color: #1D4ED8;
+            font-size: 2rem;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70vh;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .back-button {
+            display: block;
+            text-align: center;
+            margin-top: 2rem;
+            padding: 0.5rem 1rem;
+            background-color: #3B82F6;
+            color: white;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #2563EB;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Similarity Scores of Candidates by Category</h1>
+
+    <div class="chart-container">
+        <img src="{{ url_for('static', filename=bar_chart_image) }}" alt="Similarity Bar Chart" class="transition-transform duration-500 transform hover:scale-105">
+    </div>
+
+    <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+
+</body>
+</html>

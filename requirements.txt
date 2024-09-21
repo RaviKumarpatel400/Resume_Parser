@@ -1,0 +1,9 @@
+Flask
+matplotlib
+spacy
+PyMuPDF
+nltk
+requests
+scikit-learn
+beautifulsoup4
+gunicorn

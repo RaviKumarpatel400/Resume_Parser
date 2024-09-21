@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similarity Score</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4ECDC4;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .candidate {
+            border: 2px solid #4ECDC4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f0f9f9;
+            transition: transform 0.2s;
+        }
+        .candidate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4ECDC4;
+            background-color: #080110;
+            padding: 5px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: #4ECDC4;
+            font-weight: bold;
+            padding: 10px 15px;
+            border: 2px solid #4ECDC4;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        a:hover {
+            background-color: #4ECDC4;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Candidate Similarity Scores</h1>
+    <div class="container">
+        {% for i in range(resume_details|length) %}
+            <div class="candidate">
+                <h2>Candidate {{ i + 1 }}</h2>
+                <p>Skills Score: <span class="score">{{ similarity_scores[i]['skills_score'] }}%</span></p>
+                <p>Education Score: <span class="score">{{ similarity_scores[i]['education_score'] }}%</span></p>
+                <p>Overall Score: <span class="score">{{ similarity_scores[i]['overall_score'] }}%</span></p>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="footer">
+        <a href="{{ url_for('index') }}">Back to Home</a>
+    </div>
+</body>
+</html>

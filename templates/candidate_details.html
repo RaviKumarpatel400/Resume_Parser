@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .menu-icon {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-icon.active {
+            transform: rotate(90deg);
+        }
+
+        .menu-dropdown {
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .menu-dropdown.show {
+            display: block;
+        }
+
+        nav {
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .candidate-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .skill-tag {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            display: inline-block;
+            margin: 0.25rem;
+        }
+
+        .view-chart-button {
+            transition: all 0.3s ease;
+        }
+
+        .view-chart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-white text-2xl font-bold">Candidate Details</h1>
+            <div class="relative">
+                <div class="menu-icon text-white text-3xl" onclick="toggleMenu()">&#9776;</div>
+                <div class="menu-dropdown absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                    <a href="{{ url_for('index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Home</a>
+                    <a href="{{ url_for('similarity_score') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Similarity Score</a>
+                    <a href="{{ url_for('visualization_graph') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Visualization Graph</a>
+                    <a href="{{ url_for('similarity_bar_chart') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Similarity Bar Chart</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8">
+        {% for i in range(resume_details|length) %}
+        <div class="candidate-card bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600">Candidate {{ i + 1 }}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p><strong class="text-gray-700">Name:</strong> {{ resume_details[i]['name'] }}</p>
+                <p><strong class="text-gray-700">Email:</strong> {{ resume_details[i]['email'] }}</p>
+                <p><strong class="text-gray-700">Phone:</strong> {{ resume_details[i]['phone'] }}</p>
+                <p><strong class="text-gray-700">Education:</strong> {{ resume_details[i]['education'] }}</p>
+            </div>
+            <div class="mt-4">
+                <p><strong class="text-gray-700">Skills:</strong>
+                    {% for skill in resume_details[i]['skills'] %}
+                    <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
+                </p>
+                <p class="mt-2"><strong class="text-gray-700">Projects:</strong> {{ resume_details[i]['projects'] }}</p>
+                <p class="mt-2"><strong class="text-gray-700">Experience:</strong> {{ resume_details[i]['experience'] }}</p>
+
+                <!-- Display Non-Matching Skills -->
+                <p class="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                    <strong class="font-bold">Non-Matching Skills:</strong>
+                    {% if non_matching_skills[i] %}
+                    {{ non_matching_skills[i] | join(', ') }}
+                    {% else %}
+                    None
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+        <!-- Make sure to close the 'for' loop -->
+
+        <!-- Link to Similarity Bar Chart Page -->
+        <div class="text-center mt-8 mb-12">
+            <a href="{{ url_for('similarity_bar_chart') }}" class="view-chart-button inline-block px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-semibold">View Similarity Bar Chart</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var menuIcon = document.querySelector('.menu-icon');
+            var menuDropdown = document.querySelector('.menu-dropdown');
+            menuIcon.classList.toggle('active');
+            menuDropdown.classList.toggle('show');
+        }
+    </script>
+</body>
+
+</html>
