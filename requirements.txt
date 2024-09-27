@@ -6,4 +6,6 @@ nltk
 requests
 scikit-learn
 beautifulsoup4
+flask-mysql-connector
+flask-bcrypt
 gunicorn
