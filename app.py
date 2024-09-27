@@ -1,23 +1,92 @@
 import os
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_mysql_connector import MySQL
+from flask_bcrypt import Bcrypt
 import matplotlib.pyplot as plt
-from flask import Flask, render_template, request, redirect, url_for
 from resume_parser import parse_resume, get_job_description, calculate_similarity, find_non_matching_skills
-from flask import jsonify
 
-# Set the backend for matplotlib to 'Agg' to avoid using Tkinter
-plt.switch_backend('Agg')
-
+# Initialize Flask app
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
+# Configure MySQL connection
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'Ramkr@123'
+app.config['MYSQL_DATABASE'] = 'candidate_system'
+app.config['MYSQL_HOST'] = 'localhost'
+
+mysql = MySQL(app)
+bcrypt = Bcrypt(app)
+
+# Global lists to store details
 resume_details = []
 similarity_scores = []
 pie_chart_images = []
-non_matching_skills_list = []  # This stores non-matching skills
+non_matching_skills_list = []
+
+# Switch backend for matplotlib to 'Agg'
+plt.switch_backend('Agg')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+
+        # Hash the password for security
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # Insert the user into the database
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (username, email, hashed_password))
+        mysql.connection.commit()
+        cursor.close()
+
+        flash('Signup successful! You can now login.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('signup.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        # Retrieve user from database
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user and bcrypt.check_password_hash(user[3], password):
+            session['loggedin'] = True
+            session['username'] = user[1]
+            flash(f'Welcome {user[1]}!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Login failed! Please check your email and password.', 'danger')
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('loggedin', None)
+    session.pop('username', None)
+    flash('You have successfully logged out.', 'success')
+    return redirect(url_for('login'))
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
     global resume_details, similarity_scores, pie_chart_images, non_matching_skills_list
-    
+
     if request.method == 'POST':
         job_url = request.form['job_url']
         resumes = request.files.getlist('resumes')
@@ -36,9 +105,9 @@ def index():
             # Calculate similarity for each resume
             skills_score, education_score, overall_score = calculate_similarity(details, job_description)
             similarity_scores.append({
-                'skills_score': float(skills_score),  # Convert to float
-                'education_score': float(education_score),  # Convert to float
-                'overall_score': float(overall_score)  # Convert to float
+                'skills_score': skills_score,
+                'education_score': education_score,
+                'overall_score': overall_score
             })
 
             # Find non-matching skills
@@ -71,16 +140,15 @@ def index():
 @app.route('/candidate_details')
 def candidate_details():
     if not resume_details:
-        return redirect(url_for('index'))  # Redirect if no resume details are available
+        return redirect(url_for('index'))
 
-    # Pass non-matching skills to the candidate details template
     return render_template('candidate_details.html', resume_details=resume_details, non_matching_skills=non_matching_skills_list)
 
 
 @app.route('/similarity_score')
 def similarity_score():
     if not resume_details or not similarity_scores:
-        return redirect(url_for('index'))  # Redirect if no resume or similarity data is available
+        return redirect(url_for('index'))
 
     return render_template('similarity_score.html', resume_details=resume_details, similarity_scores=similarity_scores)
 
@@ -88,27 +156,23 @@ def similarity_score():
 @app.route('/visualization_graph')
 def visualization_graph():
     if not pie_chart_images:
-        return redirect(url_for('index'))  # Redirect if no pie chart images are available
+        return redirect(url_for('index'))
 
     return render_template('visualization_graph.html', pie_chart_images=pie_chart_images)
 
 
 @app.route('/similarity_bar_chart')
+# @login_required
 def similarity_bar_chart():
     if not similarity_scores:
-        return redirect(url_for('index'))  # Redirect if no similarity scores are available
+        return redirect(url_for('index'))
 
-    # Generate the bar chart
     candidates = [f'Candidate {i+1}' for i in range(len(similarity_scores))]
-
-    # Create separate data lists for each category
     skills_scores = [score['skills_score'] for score in similarity_scores]
     education_scores = [score['education_score'] for score in similarity_scores]
     overall_scores = [score['overall_score'] for score in similarity_scores]
 
-    # Plot the bar chart
     plt.figure(figsize=(10, 6))
-
     bar_width = 0.25
     index = range(len(candidates))
 
@@ -121,16 +185,14 @@ def similarity_bar_chart():
     plt.title('Similarity Scores by Category')
     plt.xticks([i + bar_width for i in index], candidates)
 
-    # Add legend
     plt.legend()
-
-    # Save the bar chart as an image in the static folder
     bar_chart_filename = 'similarity_bar_chart.png'
     bar_chart_path = os.path.join('static', bar_chart_filename)
     plt.savefig(bar_chart_path)
     plt.close()
 
     return render_template('similarity_bar_chart.html', bar_chart_image=bar_chart_filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
